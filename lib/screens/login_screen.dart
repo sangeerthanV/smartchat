@@ -11,36 +11,50 @@ class LoginScreen extends StatefulWidget {
 
 class _LoginScreenState extends State<LoginScreen> {
   final AuthService _authService = AuthService();
+  final _formKey = GlobalKey<FormState>();
+
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
 
-  bool _isLoading = false;
+  bool _isLogin = true; // Toggle between login/signup
+  bool _loading = false;
   String? _error;
 
-  void _login() async {
+  Future<void> _submit() async {
+    if (!_formKey.currentState!.validate()) return;
+
     setState(() {
-      _isLoading = true;
+      _loading = true;
       _error = null;
     });
 
     try {
-      await _authService.login(
-        _emailController.text.trim(),
-        _passwordController.text.trim(),
-      );
-      if (!mounted) return;
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (_) => const ChatScreen()),
-      );
+      if (_isLogin) {
+        await _authService.login(
+          _emailController.text.trim(),
+          _passwordController.text.trim(),
+        );
+      } else {
+        await _authService.signup(
+          _emailController.text.trim(),
+          _passwordController.text.trim(),
+        );
+      }
+      // On success, navigate to chat screen
+      if (mounted) {
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (_) => const ChatScreen()),
+        );
+      }
     } catch (e) {
       setState(() {
-        _error = 'Invalid credentials';
+        _error = e.toString();
       });
     } finally {
       if (mounted) {
         setState(() {
-          _isLoading = false;
+          _loading = false;
         });
       }
     }
@@ -49,50 +63,87 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.deepPurple[50],
-      body: Center(
-        child: Container(
-          padding: const EdgeInsets.all(24),
-          margin: const EdgeInsets.all(24),
-          constraints: const BoxConstraints(maxWidth: 400),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(16),
-            boxShadow: const [
-              BoxShadow(color: Colors.black12, blurRadius: 10),
-            ],
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Text(
-                'SmartChat Login',
-                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.deepPurple),
+      appBar: AppBar(
+        title: Text(_isLogin ? 'Login to SmartChat' : 'Sign Up for SmartChat'),
+        centerTitle: true,
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Center(
+          child: SingleChildScrollView(
+            child: Form(
+              key: _formKey,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // Email
+                  TextFormField(
+                    controller: _emailController,
+                    keyboardType: TextInputType.emailAddress,
+                    decoration: const InputDecoration(
+                      labelText: 'Email',
+                      prefixIcon: Icon(Icons.email),
+                      border: OutlineInputBorder(),
+                    ),
+                    validator: (val) {
+                      if (val == null || val.isEmpty) return 'Enter email';
+                      if (!val.contains('@')) return 'Enter valid email';
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 16),
+                  // Password
+                  TextFormField(
+                    controller: _passwordController,
+                    obscureText: true,
+                    decoration: const InputDecoration(
+                      labelText: 'Password',
+                      prefixIcon: Icon(Icons.lock),
+                      border: OutlineInputBorder(),
+                    ),
+                    validator: (val) {
+                      if (val == null || val.isEmpty) return 'Enter password';
+                      if (val.length < 6) return 'Password must be at least 6 characters';
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 24),
+                  // Error message
+                  if (_error != null)
+                    Text(
+                      _error!,
+                      style: const TextStyle(color: Colors.red),
+                      textAlign: TextAlign.center,
+                    ),
+                  if (_error != null) const SizedBox(height: 12),
+                  // Submit button
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: _loading ? null : _submit,
+                      child: _loading
+                          ? const CircularProgressIndicator(color: Colors.white)
+                          : Text(_isLogin ? 'Login' : 'Sign Up'),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  // Toggle login/signup
+                  TextButton(
+                    onPressed: _loading
+                        ? null
+                        : () {
+                      setState(() {
+                        _isLogin = !_isLogin;
+                        _error = null;
+                      });
+                    },
+                    child: Text(_isLogin
+                        ? "Don't have an account? Sign Up"
+                        : "Already have an account? Login"),
+                  ),
+                ],
               ),
-              const SizedBox(height: 20),
-              TextField(
-                controller: _emailController,
-                decoration: const InputDecoration(labelText: 'Email'),
-              ),
-              const SizedBox(height: 12),
-              TextField(
-                controller: _passwordController,
-                obscureText: true,
-                decoration: const InputDecoration(labelText: 'Password'),
-              ),
-              const SizedBox(height: 20),
-              if (_error != null) Text(_error!, style: const TextStyle(color: Colors.red)),
-              _isLoading
-                  ? const CircularProgressIndicator()
-                  : ElevatedButton(
-                onPressed: _login,
-                style: ElevatedButton.styleFrom(backgroundColor: Colors.deepPurple),
-                child: const Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                  child: Text('Login', style: TextStyle(fontSize: 16)),
-                ),
-              ),
-            ],
+            ),
           ),
         ),
       ),
