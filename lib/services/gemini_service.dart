@@ -3,9 +3,9 @@ import 'package:http/http.dart' as http;
 
 class GeminiService {
   final String _apiKey = 'AIzaSyCH9jZpt5rCKQKZ6wkcnteK-tEH7vttdeU';
-  final String _projectId = 'smartchat-b9dcc';       // e.g., smartchat-12345
-  final String _location = 'us-central1';            // your model's region
-  final String _modelId = 'chat-bison-001';          // exact model ID you have access to
+  final String _projectId = 'smartchat-b9dcc';
+  final String _location = 'us-central1';
+  final String _modelId = 'chat-bison-001';
 
   Future<String> sendMessage(String message) async {
     final url = 'https://generativelanguage.googleapis.com/v1beta2/projects/$_projectId/locations/$_location/models/$_modelId:generateMessage?key=$_apiKey';

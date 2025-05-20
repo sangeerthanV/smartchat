@@ -14,7 +14,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'SmartChat',
+      title: 'smartchat',
       theme: ThemeData(primarySwatch: Colors.blue),
       home: const LoginScreen(),
     );
