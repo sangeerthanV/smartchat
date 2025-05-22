@@ -2,16 +2,15 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 class GeminiService {
-  final String _apiKey = 'AIzaSyCH9jZpt5rCKQKZ6wkcnteK-tEH7vttdeU'; // your Gemini API key
+  final String _apiKey = 'AIzaSyCH9jZpt5rCKQKZ6wkcnteK-tEH7vttdeU'; // Use your Gemini API key
 
   Future<String> sendMessage(String userMessage) async {
-    const String url = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent';
+    const String baseUrl = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent';
+    final Uri url = Uri.parse('$baseUrl?key=$_apiKey');
 
     final response = await http.post(
-      Uri.parse('$url?key=$_apiKey'),
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      url,
+      headers: {'Content-Type': 'application/json'},
       body: jsonEncode({
         'contents': [
           {
@@ -24,12 +23,12 @@ class GeminiService {
     );
 
     if (response.statusCode == 200) {
-      final data = jsonDecode(response.body);
-      final reply = data['candidates'][0]['content']['parts'][0]['text'];
-      return reply.trim();
+      final jsonResponse = jsonDecode(response.body);
+      final reply = jsonResponse['candidates'][0]['content']['parts'][0]['text'];
+      return reply;
     } else {
       print('API Error: ${response.statusCode}');
-      print('Response: ${response.body}');
+      print('Message: ${response.body}');
       return 'Error from Gemini API';
     }
   }
