@@ -9,30 +9,16 @@ class InputField extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-      color: Colors.deepPurple[50],
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       child: Row(
         children: [
           Expanded(
             child: TextField(
               controller: controller,
-              decoration: const InputDecoration(
-                hintText: 'Type your message...',
-                border: OutlineInputBorder(),
-              ),
-              onSubmitted: (_) => onSend(),
+              decoration: const InputDecoration(hintText: 'Type a message...'),
             ),
           ),
-          const SizedBox(width: 8),
-          ElevatedButton(
-            onPressed: onSend,
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.deepPurple,
-              shape: const CircleBorder(),
-              padding: const EdgeInsets.all(12),
-            ),
-            child: const Icon(Icons.send, color: Colors.white),
-          ),
+          IconButton(icon: const Icon(Icons.send), onPressed: onSend),
         ],
       ),
     );
