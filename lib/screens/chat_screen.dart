@@ -14,63 +14,42 @@ class ChatScreen extends StatefulWidget {
 
 class _ChatScreenState extends State<ChatScreen> {
   final List<Message> _messages = [];
-  final TextEditingController _controller = TextEditingController();
+  final _controller = TextEditingController();
   final GeminiService _gemini = GeminiService();
-  final AuthService _authService = AuthService();
-
-  bool _isLoading = false;
+  final AuthService _auth = AuthService();
 
   void _sendMessage() async {
     final input = _controller.text.trim();
     if (input.isEmpty) return;
 
-    setState(() {
-      _messages.add(Message(text: input, isUser: true));
-      _isLoading = true;
-    });
+    setState(() => _messages.add(Message(text: input, isUser: true)));
     _controller.clear();
 
     final reply = await _gemini.sendMessage(input);
-
-    setState(() {
-      _messages.add(Message(text: reply, isUser: false));
-      _isLoading = false;
-    });
+    setState(() => _messages.add(Message(text: reply, isUser: false)));
   }
 
   void _logout() async {
-    await _authService.logout();
+    await _auth.logout();
     if (!mounted) return;
-    Navigator.of(context).pushReplacementNamed('/');
+    Navigator.pop(context);
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('SmartChat (Gemini)'),
-        backgroundColor: Colors.deepPurple,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.logout),
-            onPressed: _logout,
-          ),
-        ],
+        title: const Text("SmartChat"),
+        actions: [IconButton(onPressed: _logout, icon: const Icon(Icons.logout))],
       ),
       body: Column(
         children: [
           Expanded(
             child: ListView.builder(
-              padding: const EdgeInsets.all(12),
               itemCount: _messages.length,
-              itemBuilder: (context, index) => ChatBubble(message: _messages[index]),
+              itemBuilder: (context, i) => ChatBubble(message: _messages[i]),
             ),
           ),
-          if (_isLoading)
-            const Padding(
-              padding: EdgeInsets.all(10),
-              child: CircularProgressIndicator(),
-            ),
           InputField(controller: _controller, onSend: _sendMessage),
         ],
       ),

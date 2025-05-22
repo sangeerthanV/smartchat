@@ -10,141 +10,50 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
+  final _emailController = TextEditingController();
+  final _passwordController = TextEditingController();
   final AuthService _authService = AuthService();
-  final _formKey = GlobalKey<FormState>();
+  bool isLogin = true;
+  String errorMessage = '';
 
-  final TextEditingController _emailController = TextEditingController();
-  final TextEditingController _passwordController = TextEditingController();
+  void _submit() async {
+    final email = _emailController.text.trim();
+    final password = _passwordController.text.trim();
 
-  bool _isLogin = true; // Toggle between login/signup
-  bool _loading = false;
-  String? _error;
+    String? error;
+    if (isLogin) {
+      error = await _authService.login(email, password);
+    } else {
+      error = await _authService.signup(email, password);
+    }
 
-  Future<void> _submit() async {
-    if (!_formKey.currentState!.validate()) return;
-
-    setState(() {
-      _loading = true;
-      _error = null;
-    });
-
-    try {
-      if (_isLogin) {
-        await _authService.login(
-          _emailController.text.trim(),
-          _passwordController.text.trim(),
-        );
-      } else {
-        await _authService.signup(
-          _emailController.text.trim(),
-          _passwordController.text.trim(),
-        );
-      }
-      // On success, navigate to chat screen
-      if (mounted) {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (_) => const ChatScreen()),
-        );
-      }
-    } catch (e) {
-      setState(() {
-        _error = e.toString();
-      });
-    } finally {
-      if (mounted) {
-        setState(() {
-          _loading = false;
-        });
-      }
+    if (error == null) {
+      if (!mounted) return;
+      Navigator.pushReplacement(context,
+          MaterialPageRoute(builder: (_) => const ChatScreen()));
+    } else {
+      setState(() => errorMessage = error!);
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text(_isLogin ? 'Login to SmartChat' : 'Sign Up for SmartChat'),
-        centerTitle: true,
-      ),
+      appBar: AppBar(title: const Text("SmartChat Login")),
       body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Center(
-          child: SingleChildScrollView(
-            child: Form(
-              key: _formKey,
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  // Email
-                  TextFormField(
-                    controller: _emailController,
-                    keyboardType: TextInputType.emailAddress,
-                    decoration: const InputDecoration(
-                      labelText: 'Email',
-                      prefixIcon: Icon(Icons.email),
-                      border: OutlineInputBorder(),
-                    ),
-                    validator: (val) {
-                      if (val == null || val.isEmpty) return 'Enter email';
-                      if (!val.contains('@')) return 'Enter valid email';
-                      return null;
-                    },
-                  ),
-                  const SizedBox(height: 16),
-                  // Password
-                  TextFormField(
-                    controller: _passwordController,
-                    obscureText: true,
-                    decoration: const InputDecoration(
-                      labelText: 'Password',
-                      prefixIcon: Icon(Icons.lock),
-                      border: OutlineInputBorder(),
-                    ),
-                    validator: (val) {
-                      if (val == null || val.isEmpty) return 'Enter password';
-                      if (val.length < 6) return 'Password must be at least 6 characters';
-                      return null;
-                    },
-                  ),
-                  const SizedBox(height: 24),
-                  // Error message
-                  if (_error != null)
-                    Text(
-                      _error!,
-                      style: const TextStyle(color: Colors.red),
-                      textAlign: TextAlign.center,
-                    ),
-                  if (_error != null) const SizedBox(height: 12),
-                  // Submit button
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      onPressed: _loading ? null : _submit,
-                      child: _loading
-                          ? const CircularProgressIndicator(color: Colors.white)
-                          : Text(_isLogin ? 'Login' : 'Sign Up'),
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  // Toggle login/signup
-                  TextButton(
-                    onPressed: _loading
-                        ? null
-                        : () {
-                      setState(() {
-                        _isLogin = !_isLogin;
-                        _error = null;
-                      });
-                    },
-                    child: Text(_isLogin
-                        ? "Don't have an account? Sign Up"
-                        : "Already have an account? Login"),
-                  ),
-                ],
-              ),
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          children: [
+            TextField(controller: _emailController, decoration: const InputDecoration(labelText: 'Email')),
+            TextField(controller: _passwordController, obscureText: true, decoration: const InputDecoration(labelText: 'Password')),
+            const SizedBox(height: 12),
+            ElevatedButton(onPressed: _submit, child: Text(isLogin ? 'Login' : 'Signup')),
+            TextButton(
+              onPressed: () => setState(() => isLogin = !isLogin),
+              child: Text(isLogin ? 'Create new account' : 'Already have an account?'),
             ),
-          ),
+            if (errorMessage.isNotEmpty) Text(errorMessage, style: const TextStyle(color: Colors.red)),
+          ],
         ),
       ),
     );

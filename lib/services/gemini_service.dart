@@ -1,36 +1,30 @@
+
+
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 class GeminiService {
-  final String _apiKey = 'AIzaSyCH9jZpt5rCKQKZ6wkcnteK-tEH7vttdeU';
-  final String _projectId = 'smartchat-b9dcc';
-  final String _location = 'us-central1';
-  final String _modelId = 'chat-bison-001';
+final String apiKey = 'AIzaSyCH9jZpt5rCKQKZ6wkcnteK-tEH7vttdeU'; // Replace this
 
-  Future<String> sendMessage(String message) async {
-    final url = 'https://generativelanguage.googleapis.com/v1beta2/projects/$_projectId/locations/$_location/models/$_modelId:generateMessage?key=$_apiKey';
+Future<String> sendMessage(String message) async {
+final url = Uri.parse(
+'https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=$apiKey');
 
-    final response = await http.post(
-      Uri.parse(url),
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: jsonEncode({
-        "prompt": {
-          "messages": [
-            {"author": "user", "content": message}
-          ]
-        },
-        "temperature": 0.7,
-      }),
-    );
+final response = await http.post(url,
+headers: {'Content-Type': 'application/json'},
+body: jsonEncode({
+"contents": [
+{
+"parts": [{"text": message}]
+}
+]
+}));
 
-    if (response.statusCode == 200) {
-      final data = jsonDecode(response.body);
-      final reply = data['candidates'][0]['content'];
-      return reply.trim();
-    } else {
-      return 'Error: ${response.statusCode} - ${response.body}';
-    }
-  }
+if (response.statusCode == 200) {
+final data = jsonDecode(response.body);
+return data['candidates'][0]['content']['parts'][0]['text'];
+} else {
+return 'API Error: ${response.body}';
+}
+}
 }

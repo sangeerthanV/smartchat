@@ -8,25 +8,19 @@ class ChatBubble extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isUser = message.isUser;
-    final alignment = isUser ? CrossAxisAlignment.end : CrossAxisAlignment.start;
-    final bubbleColor = isUser ? Colors.deepPurple : Colors.grey[300];
-    final textColor = isUser ? Colors.white : Colors.black87;
-
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 12),
-      child: Column(
-        crossAxisAlignment: alignment,
-        children: [
-          Container(
-            decoration: BoxDecoration(
-              color: bubbleColor,
-              borderRadius: BorderRadius.circular(12),
-            ),
-            padding: const EdgeInsets.all(12),
-            child: Text(message.text, style: TextStyle(color: textColor, fontSize: 16)),
-          ),
-        ],
+    return Container(
+      alignment: message.isUser ? Alignment.centerRight : Alignment.centerLeft,
+      padding: const EdgeInsets.all(8),
+      child: Container(
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: message.isUser ? Colors.deepPurple : Colors.grey[300],
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Text(
+          message.text,
+          style: TextStyle(color: message.isUser ? Colors.white : Colors.black87),
+        ),
       ),
     );
   }
