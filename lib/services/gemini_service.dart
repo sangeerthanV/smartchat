@@ -2,10 +2,10 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 class GeminiService {
-  final String _apiKey = 'AIzaSyCH9jZpt5rCKQKZ6wkcnteK-tEH7vttdeU'; // Use your Gemini API key
+  final String _apiKey ='AIzaSyCH9jZpt5rCKQKZ6wkcnteK-tEH7vttdeU';
 
   Future<String> sendMessage(String userMessage) async {
-    const String baseUrl = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent';
+    const String baseUrl = 'curl -X GET '"https://generativelanguage.googleapis.com/v1beta/models?key=AIzaSyCH9jZpt5rCKQKZ6wkcnteK-tEH7vttdeU";
     final Uri url = Uri.parse('$baseUrl?key=$_apiKey');
 
     final response = await http.post(
