@@ -6,9 +6,8 @@ class GeminiService {
 
   Future<String> sendMessage(String userMessage) async {
     // Use the correct Gemini model endpoint (e.g., gemini-1.5-pro).
-    const String model = 'gemini-1.5-pro'; // or use the latest available model from the list API
-    final String baseUrl =
-        'https://generativelanguage.googleapis.com/v1beta/models/$model:generateContent';
+    const String model = 'gemini-1.5'; // or use the latest available model from the list API
+    final String baseUrl = 'https://generativelanguage.googleapis.com/v1beta/models/$model:generateContent';
     final Uri url = Uri.parse('$baseUrl?key=$_apiKey');
 
     try {
